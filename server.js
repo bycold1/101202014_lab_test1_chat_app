@@ -54,7 +54,22 @@ io.on('connection', socket => {
 
  
 
-
+  socket.on('joinRoom', async data => {
+    try {
+      const user = await User.findOne({ username: data.username });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      user.room = data.room;
+      await user.save();
+      socket.leave(Object.keys(socket.rooms)[1]);
+      socket.join(data.room);
+      socket.emit('joinRoomSuccess', data.room);
+    } catch (error) {
+      console.error(error);
+      socket.emit('joinRoomError', error.message);
+    }
+  });
 
   socket.on('leaveRoom', async data => {
     try {
