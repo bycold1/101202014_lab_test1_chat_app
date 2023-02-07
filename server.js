@@ -52,7 +52,19 @@ io.on('connection', socket => {
     }
   });
 
- 
+  socket.on('login', async data => {
+    try {
+      const user = await User.findOne({ username: data.username, password: data.password });
+      if (!user) {
+        throw new Error('Username or password is incorrect');
+      }
+      socket.join(user.room);
+      socket.emit('loginSuccess');
+    } catch (error) {
+      console.error(error);
+      socket.emit('loginError', error.message);
+    }
+  });
 
   socket.on('joinRoom', async data => {
     try {
